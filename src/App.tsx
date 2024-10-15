@@ -1,5 +1,6 @@
 import React from 'react';
 import Header from './components/Header';
+import Main from './components/Main';
 
 const App = () => {
   return (
@@ -13,9 +14,10 @@ const App = () => {
       </div>
 
       {/* Contenido principal vacío */}
-      <main className="h-[500px] bg-[#F8F7F3]">
+      <div className="h-[500px] bg-[#F8F7F3]">
         {/* Aquí irá el contenido principal */}
-      </main>
+      <Main />
+      </div>
 
       {/* Contenedor para el pie de página */}
       <footer className="h-[300px] w-full bg-red-500">
