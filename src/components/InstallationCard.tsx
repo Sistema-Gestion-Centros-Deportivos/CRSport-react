@@ -1,6 +1,5 @@
 import React from 'react';
 
-
 // Definimos los tipos de las props
 interface InstallationCardProps {
   nombre: string;
