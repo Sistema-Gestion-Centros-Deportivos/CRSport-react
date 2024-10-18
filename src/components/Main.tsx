@@ -37,7 +37,7 @@ const Main = () => {
   }
 
   return (
-    <main className="h-full bg-[#F8F7F3] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <main className="h-full bg-[#F8F7F3]">
       {instalaciones.map((instalacion) => (
         <InstallationCard
           key={instalacion.id}

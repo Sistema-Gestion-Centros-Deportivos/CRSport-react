@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+
+
+main {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(
+      300px, 
+      1fr)
+  );
+  gap: 16px;
+}
+
+
 /* :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

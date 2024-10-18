@@ -25,7 +25,7 @@ const InstallationCard: React.FC<InstallationCardProps> = ({
         <img 
           src={imagen} 
           alt={nombre} 
-          className="w-full h-full object-cover rounded-[25px]"
+          className="w-full h-full object-cover rounded-[24px]"
         />
       </div>
 
