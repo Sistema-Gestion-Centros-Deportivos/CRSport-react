@@ -1,22 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Header from './components/Header';
 import Main from './components/Main';
+import FilterBar from './components/FilterBar';
+import { fetchFilteredInstalaciones } from './services/apiService';  // Importamos la función del servicio
 
 const App = () => {
+  const [instalaciones, setInstalaciones] = useState([]);
+  const [selectedActividad, setSelectedActividad] = useState<number | null>(null);
+
+  const handleFilterSelect = async (actividadId: number) => {
+    setSelectedActividad(actividadId);
+    try {
+      const data = await fetchFilteredInstalaciones(actividadId);  // Llamamos a la función desde el servicio
+      setInstalaciones(data);
+    } catch (error) {
+      console.error('Error al filtrar las instalaciones:', error);
+    }
+  };
+
   return (
     <div className="h-screen px-10 bg-[#F8F7F3]">
       {/* Componente Header */}
       <Header />
 
-      {/* Contenedor para los filtros */}
-      <div className="h-[78px] w-full bg-[#F8F7F3]">
-        {/* Contenido vacío para los filtros */}
-      </div>
+      {/* Componente FilterBar */}
+      <FilterBar onFilterSelect={handleFilterSelect} />
 
-      {/* Contenido principal vacío */}
-      <div className="h-[500px] bg-[#F8F7F3]">
+      {/* Contenedor para el contenido principal */}
+      <div className="flex-grow pb-10 bg-[#F8F7F3]">
         {/* Aquí irá el contenido principal */}
-      <Main />
+        <Main instalaciones={instalaciones} />
       </div>
 
       {/* Contenedor para el pie de página */}
@@ -28,4 +41,3 @@ const App = () => {
 };
 
 export default App;
-  

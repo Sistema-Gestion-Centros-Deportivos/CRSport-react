@@ -2,9 +2,19 @@ import React, { useState, useEffect } from 'react';
 import InstallationCard from './InstallationCard';  // Asegúrate de que la ruta es correcta
 
 const Main = () => {
-  const [instalaciones, setInstalaciones] = useState([]);  // Estado para almacenar las instalaciones
+  interface Instalacion {
+    id: number;
+    nombre: string;
+    descripcion: string;
+    ubicacion: string;
+    disponible_desde: string;
+    disponible_hasta: string;
+    imagen: string;
+  }
+
+  const [instalaciones, setInstalaciones] = useState<Instalacion[]>([]);  // Estado para almacenar las instalaciones
   const [loading, setLoading] = useState(true);  // Estado para el loading
-  const [error, setError] = useState(null);  // Estado para manejar errores
+  const [error, setError] = useState<string | null>(null);  // Estado para manejar errores
 
   // Llamada a la API usando useEffect
   useEffect(() => {
@@ -18,7 +28,7 @@ const Main = () => {
         setInstalaciones(data);  // Guardamos los datos en el estado
         setLoading(false);  // Dejamos de mostrar el loading
       } catch (error) {
-        setError(error.message);  // Si hay un error, lo mostramos
+        setError((error as Error).message);  // Si hay un error, lo mostramos
         setLoading(false);
       }
     };
