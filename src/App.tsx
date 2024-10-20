@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Main from './components/Main';
 import FilterBar from './components/FilterBar';
@@ -8,13 +8,28 @@ const App = () => {
   const [instalaciones, setInstalaciones] = useState([]);
   const [selectedActividad, setSelectedActividad] = useState<number | null>(null);
 
-  const handleFilterSelect = async (actividadId: number) => {
+  useEffect(() => {
+    // Llamamos a la API para obtener todas las instalaciones al inicio
+    const fetchAllInstalaciones = async () => {
+      try {
+        const data = await fetchFilteredInstalaciones(null);  // Cargar todas las instalaciones al inicio
+        setInstalaciones(data);
+      } catch (error) {
+        console.error('Error al cargar todas las instalaciones:', error);
+      }
+    };
+
+    fetchAllInstalaciones();
+  }, []);
+
+  const handleFilterSelect = async (actividadId: number | null) => {
     setSelectedActividad(actividadId);
     try {
       const data = await fetchFilteredInstalaciones(actividadId);  // Llamamos a la función desde el servicio
-      setInstalaciones(data);
+      setInstalaciones(data);  // Actualizamos las instalaciones
     } catch (error) {
       console.error('Error al filtrar las instalaciones:', error);
+      setInstalaciones([]);  // Si hay error, vaciamos las instalaciones
     }
   };
 

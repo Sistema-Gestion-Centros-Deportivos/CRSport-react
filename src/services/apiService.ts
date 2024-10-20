@@ -1,10 +1,16 @@
-// apiService.ts
-export const fetchFilteredInstalaciones = async (actividadId: number) => {
+export const fetchFilteredInstalaciones = async (actividadId: number | null) => {
     try {
-      const response = await fetch(`http://127.0.0.1:3000/instalaciones/actividad/${actividadId}`);
+      const url = actividadId ? `http://127.0.0.1:3000/instalaciones/actividad/${actividadId}` : 'http://127.0.0.1:3000/instalaciones';
+      const response = await fetch(url);
+      
+      if (response.status === 404) {
+        return []; // Si es un 404, devolvemos un array vacío
+      }
+      
       if (!response.ok) {
         throw new Error('Error al obtener las instalaciones');
       }
+      
       const data = await response.json();
       return data;
     } catch (error) {
