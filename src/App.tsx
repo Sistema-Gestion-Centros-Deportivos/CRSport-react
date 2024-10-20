@@ -5,46 +5,48 @@ import FilterBar from './components/FilterBar';
 import { fetchFilteredInstalaciones } from './services/apiService';  // Importamos la función del servicio
 
 const App = () => {
-  const [instalaciones, setInstalaciones] = useState([]);
-  const [selectedActividad, setSelectedActividad] = useState<number | null>(null);
+  const [instalaciones, setInstalaciones] = useState([]);  // Todas las instalaciones
+  const [filteredInstalaciones, setFilteredInstalaciones] = useState([]);  // Instalaciones filtradas
+  const [searchTerm, setSearchTerm] = useState('');  // Estado para el término de búsqueda
 
   useEffect(() => {
-    // Llamamos a la API para obtener todas las instalaciones al inicio
-    const fetchAllInstalaciones = async () => {
-      try {
-        const data = await fetchFilteredInstalaciones(null);  // Cargar todas las instalaciones al inicio
-        setInstalaciones(data);
-      } catch (error) {
-        console.error('Error al cargar todas las instalaciones:', error);
-      }
+    // Llamamos a la API para obtener todas las instalaciones al montar el componente
+    const fetchInstalaciones = async () => {
+      const data = await fetch('http://127.0.0.1:3000/instalaciones');  // Aquí tu endpoint real
+      const result = await data.json();
+      setInstalaciones(result);
+      setFilteredInstalaciones(result);  // Inicialmente mostramos todas las instalaciones
     };
-
-    fetchAllInstalaciones();
+    
+    fetchInstalaciones();
   }, []);
 
-  const handleFilterSelect = async (actividadId: number | null) => {
-    setSelectedActividad(actividadId);
-    try {
-      const data = await fetchFilteredInstalaciones(actividadId);  // Llamamos a la función desde el servicio
-      setInstalaciones(data);  // Actualizamos las instalaciones
-    } catch (error) {
-      console.error('Error al filtrar las instalaciones:', error);
-      setInstalaciones([]);  // Si hay error, vaciamos las instalaciones
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    if (term === '') {
+      setFilteredInstalaciones(instalaciones);  // Si no hay búsqueda, mostramos todas
+    } else {
+      // Filtramos las instalaciones basándonos en el nombre o ubicación
+      const filtered = instalaciones.filter((instalacion) =>
+        instalacion.nombre.toLowerCase().includes(term.toLowerCase()) ||
+        instalacion.ubicacion.toLowerCase().includes(term.toLowerCase())
+      );
+      setFilteredInstalaciones(filtered);
     }
   };
 
   return (
     <div className="h-screen px-10 bg-[#F8F7F3]">
       {/* Componente Header */}
-      <Header />
+      <Header onSearch={handleSearch} />
 
       {/* Componente FilterBar */}
-      <FilterBar onFilterSelect={handleFilterSelect} />
+      <FilterBar onFilterSelect={() => {}} />  {/* Agrega lógica si necesitas filtros */}
 
       {/* Contenedor para el contenido principal */}
       <div className="flex-grow pb-10 bg-[#F8F7F3]">
-        {/* Aquí irá el contenido principal */}
-        <Main instalaciones={instalaciones} />
+        {/* Pasamos las instalaciones filtradas a Main */}
+        <Main instalaciones={filteredInstalaciones} />
       </div>
 
       {/* Contenedor para el pie de página */}
