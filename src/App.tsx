@@ -2,37 +2,61 @@ import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Main from './components/Main';
 import FilterBar from './components/FilterBar';
-import { fetchFilteredInstalaciones } from './services/apiService';  // Importamos la función del servicio
+import { fetchFilteredInstalaciones, fetchAllInstalaciones } from './services/apiService';  // Agregamos fetchAllInstalaciones
 
 const App = () => {
-  const [instalaciones, setInstalaciones] = useState([]);  // Todas las instalaciones
   const [filteredInstalaciones, setFilteredInstalaciones] = useState([]);  // Instalaciones filtradas
   const [searchTerm, setSearchTerm] = useState('');  // Estado para el término de búsqueda
+  const [selectedActividad, setSelectedActividad] = useState<number | null>(null);  // Estado para el filtro seleccionado
 
+  // Al montar el componente, cargamos todas las instalaciones
   useEffect(() => {
-    // Llamamos a la API para obtener todas las instalaciones al montar el componente
-    const fetchInstalaciones = async () => {
-      const data = await fetch('http://127.0.0.1:3000/instalaciones');  // Aquí tu endpoint real
-      const result = await data.json();
-      setInstalaciones(result);
-      setFilteredInstalaciones(result);  // Inicialmente mostramos todas las instalaciones
-    };
-    
-    fetchInstalaciones();
+    applyFilters('', null);  // Inicialmente, mostramos todas las instalaciones
   }, []);
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
-    if (term === '') {
-      setFilteredInstalaciones(instalaciones);  // Si no hay búsqueda, mostramos todas
+    applyFilters(term, selectedActividad);
+  };
+
+  const handleFilterSelect = (actividadId: number | null) => {
+    setSelectedActividad(actividadId);
+    applyFilters(searchTerm, actividadId);  // Filtramos de acuerdo al término de búsqueda y filtro de actividad
+  };
+
+  const applyFilters = async (term: string, actividadId: number | null) => {
+    let installationsToFilter = [];
+
+    // Si actividadId es null, significa que seleccionamos el filtro "Todos"
+    if (actividadId === null) {
+      try {
+        // Obtenemos todas las instalaciones
+        installationsToFilter = await fetchAllInstalaciones();
+      } catch (error) {
+        console.error('Error al obtener todas las instalaciones:', error);
+        installationsToFilter = [];
+      }
     } else {
-      // Filtramos las instalaciones basándonos en el nombre o ubicación
-      const filtered = instalaciones.filter((instalacion) =>
+      // Obtenemos las instalaciones filtradas por actividad
+      try {
+        installationsToFilter = await fetchFilteredInstalaciones(actividadId);
+      } catch (error) {
+        console.error('Error al obtener instalaciones filtradas por actividad:', error);
+        installationsToFilter = [];
+      }
+    }
+
+    // Aplicamos el término de búsqueda sobre las instalaciones obtenidas
+    let filtered = installationsToFilter;
+
+    if (term) {
+      filtered = installationsToFilter.filter((instalacion) =>
         instalacion.nombre.toLowerCase().includes(term.toLowerCase()) ||
         instalacion.ubicacion.toLowerCase().includes(term.toLowerCase())
       );
-      setFilteredInstalaciones(filtered);
     }
+
+    setFilteredInstalaciones(filtered);
   };
 
   return (
@@ -41,17 +65,16 @@ const App = () => {
       <Header onSearch={handleSearch} />
 
       {/* Componente FilterBar */}
-      <FilterBar onFilterSelect={() => {}} />  {/* Agrega lógica si necesitas filtros */}
+      <FilterBar onFilterSelect={handleFilterSelect} />
 
-      {/* Contenedor para el contenido principal */}
+      {/* Contenido principal */}
       <div className="flex-grow pb-10 bg-[#F8F7F3]">
-        {/* Pasamos las instalaciones filtradas a Main */}
         <Main instalaciones={filteredInstalaciones} />
       </div>
 
-      {/* Contenedor para el pie de página */}
+      {/* Pie de página */}
       <footer className="h-[300px] w-full bg-red-500">
-        {/* Contenido vacío del pie de página */}
+        {/* Contenido del pie de página */}
       </footer>
     </div>
   );
