@@ -61,5 +61,21 @@ export const login = async (correo: string, contraseña: string) => {
   
     const data = await response.json();
     return data; // Este será el mensaje de recuperación
-  };
+};
   
+// Función para decodificar el JWT y extraer el userId
+export const getUserIdFromToken = () => {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    return null; // Si no hay token, devolvemos null
+  }
+
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1])); // Decodificamos el JWT
+    return payload.userId; // Extraemos el userId del payload
+  } catch (error) {
+    console.error('Error al decodificar el token:', error);
+    return null;
+  }
+};
