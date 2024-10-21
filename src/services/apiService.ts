@@ -18,6 +18,16 @@ export const fetchFilteredInstalaciones = async (actividadId: number) => {
   return data;
 };
 
+// Nueva función para obtener las actividades asociadas a una instalación específica
+export const fetchInstallationActivities = async (installationId: number) => {
+  const response = await fetch(`http://127.0.0.1:3000/instalaciones/${installationId}/actividades`);
+  if (!response.ok) {
+    throw new Error('Error al obtener actividades asociadas a la instalación');
+  }
+  const data = await response.json();
+  return data;  // Esto debe devolver un array con las actividades de la instalación
+};
+
 // Nueva función para obtener los detalles de una instalación específica
 export const fetchInstallationDetails = async (id: string | undefined) => {
   const response = await fetch(`http://127.0.0.1:3000/instalaciones/${id}`);
