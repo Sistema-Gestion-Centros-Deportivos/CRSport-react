@@ -3,7 +3,7 @@
 export const fetchAllInstalaciones = async () => {
   const response = await fetch('http://127.0.0.1:3000/instalaciones');
   if (!response.ok) {
-    throw new Error('Error al obtener las instalaciones');
+    throw new Error('Error al obtener todas las instalaciones');
   }
   const data = await response.json();
   return data;
@@ -13,6 +13,16 @@ export const fetchFilteredInstalaciones = async (actividadId: number) => {
   const response = await fetch(`http://127.0.0.1:3000/instalaciones/actividad/${actividadId}`);
   if (!response.ok) {
     throw new Error('Error al filtrar instalaciones por actividad');
+  }
+  const data = await response.json();
+  return data;
+};
+
+// Nueva función para obtener los detalles de una instalación específica
+export const fetchInstallationDetails = async (id: string | undefined) => {
+  const response = await fetch(`http://127.0.0.1:3000/instalaciones/${id}`);
+  if (!response.ok) {
+    throw new Error('Error al obtener los detalles de la instalación');
   }
   const data = await response.json();
   return data;

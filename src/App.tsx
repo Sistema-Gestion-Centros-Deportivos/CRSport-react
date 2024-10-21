@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import Header from './components/Header';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Main from './components/Main';
-import FilterBar from './components/FilterBar';
-import { fetchFilteredInstalaciones, fetchAllInstalaciones } from './services/apiService';  // Agregamos fetchAllInstalaciones
+import InstallationDetails from './components/InstallationDetails';
+import Layout from './components/Layout';  // Importamos el nuevo componente Layout
+import { fetchFilteredInstalaciones, fetchAllInstalaciones } from './services/apiService'; 
 
 const App = () => {
-  const [filteredInstalaciones, setFilteredInstalaciones] = useState([]);  // Instalaciones filtradas
-  const [searchTerm, setSearchTerm] = useState('');  // Estado para el término de búsqueda
-  const [selectedActividad, setSelectedActividad] = useState<number | null>(null);  // Estado para el filtro seleccionado
+  const [filteredInstalaciones, setFilteredInstalaciones] = useState([]);  
+  const [searchTerm, setSearchTerm] = useState('');  
+  const [selectedActividad, setSelectedActividad] = useState<number | null>(null);  
 
-  // Al montar el componente, cargamos todas las instalaciones
   useEffect(() => {
-    applyFilters('', null);  // Inicialmente, mostramos todas las instalaciones
+    applyFilters('', null);
   }, []);
 
   const handleSearch = (term: string) => {
@@ -21,23 +21,20 @@ const App = () => {
 
   const handleFilterSelect = (actividadId: number | null) => {
     setSelectedActividad(actividadId);
-    applyFilters(searchTerm, actividadId);  // Filtramos de acuerdo al término de búsqueda y filtro de actividad
+    applyFilters(searchTerm, actividadId);  
   };
 
   const applyFilters = async (term: string, actividadId: number | null) => {
     let installationsToFilter = [];
 
-    // Si actividadId es null, significa que seleccionamos el filtro "Todos"
     if (actividadId === null) {
       try {
-        // Obtenemos todas las instalaciones
         installationsToFilter = await fetchAllInstalaciones();
       } catch (error) {
         console.error('Error al obtener todas las instalaciones:', error);
         installationsToFilter = [];
       }
     } else {
-      // Obtenemos las instalaciones filtradas por actividad
       try {
         installationsToFilter = await fetchFilteredInstalaciones(actividadId);
       } catch (error) {
@@ -46,11 +43,10 @@ const App = () => {
       }
     }
 
-    // Aplicamos el término de búsqueda sobre las instalaciones obtenidas
     let filtered = installationsToFilter;
 
     if (term) {
-      filtered = installationsToFilter.filter((instalacion) =>
+      filtered = installationsToFilter.filter((instalacion: { nombre: string; ubicacion: string }) =>
         instalacion.nombre.toLowerCase().includes(term.toLowerCase()) ||
         instalacion.ubicacion.toLowerCase().includes(term.toLowerCase())
       );
@@ -60,23 +56,17 @@ const App = () => {
   };
 
   return (
-    <div className="h-screen px-10 bg-[#F8F7F3]">
-      {/* Componente Header */}
-      <Header onSearch={handleSearch} />
-
-      {/* Componente FilterBar */}
-      <FilterBar onFilterSelect={handleFilterSelect} />
-
-      {/* Contenido principal */}
-      <div className="flex-grow pb-10 bg-[#F8F7F3]">
-        <Main instalaciones={filteredInstalaciones} />
-      </div>
-
-      {/* Pie de página */}
-      <footer className="h-[300px] w-full bg-red-500">
-        {/* Contenido del pie de página */}
-      </footer>
-    </div>
+    <Router>
+      <Routes>
+        <Route 
+          path="/" 
+          element={<Layout onSearch={handleSearch} onFilterSelect={handleFilterSelect} />} 
+        >
+          <Route index element={<Main instalaciones={filteredInstalaciones} />} />
+          <Route path="instalacion/:id" element={<InstallationDetails />} />
+        </Route>
+      </Routes>
+    </Router>
   );
 };
 

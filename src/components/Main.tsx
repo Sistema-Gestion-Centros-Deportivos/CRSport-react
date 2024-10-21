@@ -24,6 +24,7 @@ const Main: React.FC<MainProps> = ({ instalaciones }) => {
     <main className="h-full bg-[#F8F7F3]">
       {instalaciones.map((instalacion) => (
         <InstallationCard
+          id={instalacion.id}
           key={instalacion.id}
           nombre={instalacion.nombre}
           descripcion={instalacion.descripcion}

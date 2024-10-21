@@ -1,7 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // Definimos los tipos de las props
 interface InstallationCardProps {
+  id: number;  // Necesitamos el ID de la instalación para redirigir
   nombre: string;
   descripcion: string;
   ubicacion: string;
@@ -11,6 +13,7 @@ interface InstallationCardProps {
 }
 
 const InstallationCard: React.FC<InstallationCardProps> = ({ 
+  id,
   nombre, 
   descripcion, 
   ubicacion, 
@@ -18,8 +21,14 @@ const InstallationCard: React.FC<InstallationCardProps> = ({
   disponible_hasta, 
   imagen 
 }) => {
+  const navigate = useNavigate();  // Hook para redirigir
+
+  const handleClick = () => {
+    navigate(`/instalacion/${id}`);  // Navegamos a la página de detalles de la instalación
+  };
+
   return (
-    <div className="w-[300px] h-[385px] bg-[#F8F7F3] overflow-hidden">
+    <div onClick={handleClick} className="w-[300px] h-[385px] bg-[#F8F7F3] overflow-hidden cursor-pointer">
       {/* Contenedor de la imagen con corner radius */}
       <div className="w-[300px] h-[285px]">
         <img 
