@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { jwtDecode } from "jwt-decode"; // Importación por defecto para jwt-decode
 import Main from './components/Main';
 import InstallationDetails from './components/InstallationDetails';
 import Layout from './components/Layout';  
@@ -9,31 +10,28 @@ const App = () => {
   const [filteredInstalaciones, setFilteredInstalaciones] = useState([]);  
   const [searchTerm, setSearchTerm] = useState('');  
   const [selectedActividad, setSelectedActividad] = useState<number | null>(null);  
-  const [isLoggedIn, setIsLoggedIn] = useState(false);  // Estado de autenticación
-  const [userName, setUserName] = useState<string | null>(null);  // Estado del nombre de usuario
+  const [isLoggedIn, setIsLoggedIn] = useState(false);  
+  const [userName, setUserName] = useState<string | null>(null);
 
-  // Al montar la app, chequeamos si existe un token en localStorage
+  // Decodificar el token JWT para obtener el nombre de usuario
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      // Aquí podrías hacer una llamada a la API para obtener los datos del usuario
+      // Decodifica el token para extraer el nombre de usuario
+      const decodedToken: { userId: number; rol: string; nombre: string } = jwtDecode(token);
       setIsLoggedIn(true);
-      setUserName(localStorage.getItem('userName'));  // Supongamos que guardamos el nombre del usuario
+      setUserName(decodedToken.nombre); // Establece el nombre del usuario
+      localStorage.setItem('userName', decodedToken.nombre); // Guarda el nombre en localStorage
     }
-    applyFilters('', null);  // Cargamos las instalaciones inicialmente
+    applyFilters('', null); 
   }, []);
 
-  const handleLoginSuccess = (name: string) => {
-    setIsLoggedIn(true);
-    setUserName(name);
-    localStorage.setItem('userName', name);  // Guardamos el nombre en localStorage
-  };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUserName(null);
     localStorage.removeItem('token');
-    localStorage.removeItem('userName');  // Limpiamos el localStorage
+    localStorage.removeItem('userName');  
   };
 
   const handleSearch = (term: string) => {

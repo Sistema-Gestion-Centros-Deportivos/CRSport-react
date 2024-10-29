@@ -42,6 +42,7 @@ const Header: React.FC<HeaderProps> = ({ onSearch }) => {
     setIsLoggedIn(false);
     setUserName(null);
     localStorage.removeItem('token');
+    localStorage.removeItem('userName');
     setConfirmationMessage('Sesión cerrada exitosamente');
     setTimeout(() => setConfirmationMessage(null), 3000); // Eliminamos el mensaje después de 3 segundos
   };
