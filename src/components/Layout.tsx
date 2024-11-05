@@ -11,15 +11,16 @@ interface LayoutProps {
   isLoggedIn: boolean;
   userName: string | null;
   onLogout: () => void;
+  onLoginSuccess: (name: string, token: string) => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ onSearch, onFilterSelect, isLoggedIn, userName, onLogout }) => {
+const Layout: React.FC<LayoutProps> = ({ onSearch, onFilterSelect, isLoggedIn, userName, onLogout, onLoginSuccess }) => {
   const location = useLocation();
 
   return (
     <div>
       <div className="flex flex-col min-h-screen px-10 bg-[#F8F7F3]">
-        <Header onSearch={onSearch} isLoggedIn={isLoggedIn} userName={userName} onLogout={onLogout} />
+        <Header onSearch={onSearch} isLoggedIn={isLoggedIn} userName={userName} onLogout={onLogout} onLoginSuccess={onLoginSuccess}/>
         {location.pathname === '/' && <FilterBar onFilterSelect={onFilterSelect} />}
         <div className="flex-grow mb-10">
           <Outlet />
