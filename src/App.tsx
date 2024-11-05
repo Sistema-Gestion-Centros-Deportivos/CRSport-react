@@ -1,39 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 import Main from './components/Main';
 import InstallationDetails from './components/InstallationDetails';
-import Layout from './components/Layout';  
+import Layout from './components/Layout';
 import { fetchFilteredInstalaciones, fetchAllInstalaciones } from './services/apiService';
 
 const App = () => {
-  const [filteredInstalaciones, setFilteredInstalaciones] = useState([]);  
-  const [searchTerm, setSearchTerm] = useState('');  
-  const [selectedActividad, setSelectedActividad] = useState<number | null>(null);  
-  const [isLoggedIn, setIsLoggedIn] = useState(false);  // Estado de autenticación
-  const [userName, setUserName] = useState<string | null>(null);  // Estado del nombre de usuario
+  const [filteredInstalaciones, setFilteredInstalaciones] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedActividad, setSelectedActividad] = useState<number | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [rol, setRol] = useState<string | null>(null);
 
-  // Al montar la app, chequeamos si existe un token en localStorage
   useEffect(() => {
     const token = localStorage.getItem('token');
+    console.log('localStorage:', localStorage);
     if (token) {
-      // Aquí podrías hacer una llamada a la API para obtener los datos del usuario
+      const decodedToken: { userId: number; rol: string; nombre: string } = jwtDecode(token);
       setIsLoggedIn(true);
-      setUserName(localStorage.getItem('userName'));  // Supongamos que guardamos el nombre del usuario
+      setUserName(decodedToken.nombre);
+      setRol(decodedToken.rol);
+      localStorage.setItem('userName', decodedToken.nombre);
+      localStorage.setItem('rol', decodedToken.rol || '');
     }
-    applyFilters('', null);  // Cargamos las instalaciones inicialmente
+    applyFilters('', null);
   }, []);
 
-  const handleLoginSuccess = (name: string) => {
+  const handleLoginSuccess = (nombre: string) => {
     setIsLoggedIn(true);
-    setUserName(name);
-    localStorage.setItem('userName', name);  // Guardamos el nombre en localStorage
+    setUserName(nombre);
+    setRol(rol);
+    localStorage.setItem('userName', nombre);
+    localStorage.setItem('rol', rol || '');
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUserName(null);
+    setRol(null);
     localStorage.removeItem('token');
-    localStorage.removeItem('userName');  // Limpiamos el localStorage
+    localStorage.removeItem('userName');
+    localStorage.removeItem('rol');
   };
 
   const handleSearch = (term: string) => {
@@ -43,7 +52,7 @@ const App = () => {
 
   const handleFilterSelect = (actividadId: number | null) => {
     setSelectedActividad(actividadId);
-    applyFilters(searchTerm, actividadId);  
+    applyFilters(searchTerm, actividadId);
   };
 
   const applyFilters = async (term: string, actividadId: number | null) => {
@@ -80,17 +89,18 @@ const App = () => {
   return (
     <Router>
       <Routes>
-        <Route 
-          path="/" 
+        <Route
+          path="/"
           element={
-            <Layout 
-              onSearch={handleSearch} 
+            <Layout
+              onSearch={handleSearch}
               onFilterSelect={handleFilterSelect}
               isLoggedIn={isLoggedIn}
               userName={userName}
               onLogout={handleLogout}
+              onLoginSuccess={handleLoginSuccess}
             />
-          } 
+          }
         >
           <Route index element={<Main instalaciones={filteredInstalaciones} />} />
           <Route path="instalacion/:id" element={<InstallationDetails />} />

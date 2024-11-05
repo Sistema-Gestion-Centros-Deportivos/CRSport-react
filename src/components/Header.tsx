@@ -1,49 +1,36 @@
-// src/components/Header.tsx
+// Header.tsx
 
 import React, { useState } from 'react';
 import Logo from './Logo';
 import MiddleSection from './MiddleSection';
 import UserOptions from './UserOptions';
-import LoginModal from './LoginModal'; // Modal de login
+import LoginModal from './LoginModal';
 
 interface HeaderProps {
   onSearch: (term: string) => void;
+  isLoggedIn: boolean;
+  userName: string | null;
+  onLogout: () => void;
+  onLoginSuccess: (name: string, token: string) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onSearch }) => {
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false); // Controla la visibilidad del modal
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Estado de autenticación
-  const [userName, setUserName] = useState<string | null>(null); // Nombre del usuario logueado
-  const [confirmationMessage, setConfirmationMessage] = useState<string | null>(null); // Mensajes de confirmación
+const Header: React.FC<HeaderProps> = ({ onSearch, isLoggedIn, userName, onLogout, onLoginSuccess }) => {
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [confirmationMessage, setConfirmationMessage] = useState<string | null>(null);
 
-  // Función para abrir el modal de login/registro
   const handleLoginClick = () => {
     setIsLoginModalOpen(true);
   };
 
-  // Función para cerrar el modal
   const handleCloseModal = () => {
     setIsLoginModalOpen(false);
   };
 
-  // Función para manejar el login o registro exitoso
-  const handleLoginSuccess = (name: string, isRegister = false) => {
-    setIsLoggedIn(true);
-    setUserName(name);
-    setIsLoginModalOpen(false);
-    setConfirmationMessage(isRegister ? 'Usuario registrado exitosamente' : 'Inicio de sesión exitoso');
-    
-    // Eliminamos el mensaje de confirmación después de 3 segundos
+  const handleLoginSuccess = (name: string, token: string) => {
+    setConfirmationMessage('Inicio de sesión exitoso');
     setTimeout(() => setConfirmationMessage(null), 3000);
-  };
-
-  // Función para cerrar sesión
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUserName(null);
-    localStorage.removeItem('token');
-    setConfirmationMessage('Sesión cerrada exitosamente');
-    setTimeout(() => setConfirmationMessage(null), 3000); // Eliminamos el mensaje después de 3 segundos
+    onLoginSuccess(name, token); // Llama la función de éxito con el nombre y token
+    setIsLoginModalOpen(false);
   };
 
   return (
@@ -58,20 +45,18 @@ const Header: React.FC<HeaderProps> = ({ onSearch }) => {
         <UserOptions
           onLoginClick={handleLoginClick}
           userName={userName}
-          onLogout={handleLogout}
-          isLoggedIn={isLoggedIn} // Pasamos el estado de logueo
+          onLogout={onLogout}
+          isLoggedIn={isLoggedIn}
         />
       </div>
 
-      {/* Modal de Login/Registro */}
       {isLoginModalOpen && (
         <LoginModal
           onClose={handleCloseModal}
-          onLoginSuccess={(name: string) => handleLoginSuccess(name, isLoginModalOpen)}
+          onLoginSuccess={handleLoginSuccess} 
         />
       )}
 
-      {/* Mensaje de confirmación */}
       {confirmationMessage && (
         <div className="fixed top-10 left-1/2 transform -translate-x-1/2 bg-green-500 text-white py-2 px-4 rounded-lg">
           {confirmationMessage}

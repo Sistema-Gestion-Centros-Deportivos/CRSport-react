@@ -1,29 +1,49 @@
 // src/components/UserOptions.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface UserOptionsProps {
-  onLoginClick: () => void; // Evento para abrir el modal de login
-  userName?: string; // Nombre del usuario si está logueado
-  onLogout: () => void; // Evento para cerrar sesión
-  isLoggedIn: boolean; // Si el usuario está logueado o no
+  onLoginClick: () => void;
+  userName?: string | null;
+  onLogout: () => void;
+  isLoggedIn: boolean;
 }
 
 const UserOptions: React.FC<UserOptionsProps> = ({ onLoginClick, userName, onLogout, isLoggedIn }) => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Estado para controlar el dropdown
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Alternar el menú desplegable
   const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen); // Alterna el menú desplegable
+    setIsDropdownOpen(!isDropdownOpen);
   };
 
+  // Cerrar el menú al hacer clic fuera de él
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
+
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <div className="flex items-center space-x-4 w-[350px] h-[80px] justify-end">
         <div className="text-base font-semibold text-gray-800">
-          {isLoggedIn ? `Hola, ${userName}` : 'Descubre, reserva y organiza!'}
+          {isLoggedIn && userName ? `Hola, ${userName}` : 'Descubre, reserva y organiza!'}
         </div>
         <div className="flex items-center space-x-4">
-          {/* Ícono de usuario */}
           <div
             className="flex items-center border border-gray-300 rounded-full p-1 hover:shadow-md cursor-pointer"
             onClick={toggleDropdown}
@@ -45,13 +65,15 @@ const UserOptions: React.FC<UserOptionsProps> = ({ onLoginClick, userName, onLog
         </div>
       </div>
 
-      {/* Menú desplegable */}
       {isDropdownOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg">
           {isLoggedIn ? (
             <button
               className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
-              onClick={onLogout}
+              onClick={() => {
+                onLogout();
+                setIsDropdownOpen(false); // Cerrar el menú después de cerrar sesión
+              }}
             >
               Cerrar sesión
             </button>
@@ -59,13 +81,19 @@ const UserOptions: React.FC<UserOptionsProps> = ({ onLoginClick, userName, onLog
             <>
               <button
                 className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
-                onClick={onLoginClick}
+                onClick={() => {
+                  onLoginClick();
+                  setIsDropdownOpen(false); // Cerrar el menú después de abrir el modal de login
+                }}
               >
                 Iniciar sesión
               </button>
               <button
                 className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
-                onClick={onLoginClick}
+                onClick={() => {
+                  onLoginClick();
+                  setIsDropdownOpen(false); // Cerrar el menú después de abrir el modal de registro
+                }}
               >
                 Registrarse
               </button>
