@@ -29,7 +29,7 @@ const Header: React.FC<HeaderProps> = ({ onSearch, isLoggedIn, userName, onLogou
   const handleLoginSuccess = (name: string, token: string) => {
     setConfirmationMessage('Inicio de sesión exitoso');
     setTimeout(() => setConfirmationMessage(null), 3000);
-    onLoginSuccess(name); // Llama la función de éxito con el nombre y token
+    onLoginSuccess(name, token); // Llama la función de éxito con el nombre y token
     setIsLoginModalOpen(false);
   };
 
