@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import Main from './components/Main';
 import InstallationDetails from './components/InstallationDetails';
 import Layout from './components/Layout';
-import { fetchFilteredInstalaciones, fetchAllInstalaciones } from './services/apiService';
 import PaymentDetails from './components/PaymentDetails';
+import AdminCreateInstallation from './components/AdminCreateInstallation'; // Página de administración
+import { fetchFilteredInstalaciones, fetchAllInstalaciones } from './services/apiService';
 
 const App = () => {
   const [filteredInstalaciones, setFilteredInstalaciones] = useState([]);
@@ -105,8 +106,20 @@ const App = () => {
         >
           <Route index element={<Main instalaciones={filteredInstalaciones} />} />
           <Route path="instalacion/:id" element={<InstallationDetails />} />
+          <Route path="/pagos/detalles/:token_ws" element={<PaymentDetails />} />
         </Route>
-        <Route path="/pagos/detalles/:token_ws" element={<PaymentDetails />} />
+
+        {/* Ruta protegida para administradores */}
+        <Route
+          path="/admin"
+          element={
+            rol === 'administrador' ? (
+              <AdminCreateInstallation />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
       </Routes>
     </Router>
   );
