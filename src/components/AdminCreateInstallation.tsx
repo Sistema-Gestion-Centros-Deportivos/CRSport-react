@@ -4,7 +4,8 @@ import {
   crearInstalacion, 
   obtenerActividades, 
   crearActividad, 
-  asignarActividadAInstalacion 
+  asignarActividadAInstalacion, 
+  generarBloquesPorRango 
 } from '../services/adminApiService';
 
 const AdminCreateInstallation = () => {
@@ -28,6 +29,11 @@ const AdminCreateInstallation = () => {
   const [newActivityName, setNewActivityName] = useState('');
   const [selectedActivity, setSelectedActivity] = useState<number | null>(null);
   const [installationId, setInstallationId] = useState<number | null>(null);
+
+  const [blockForm, setBlockForm] = useState({
+    fechaInicio: '',
+    fechaFin: '',
+  });
 
   // Cargar actividades al montar el componente
   useEffect(() => {
@@ -119,6 +125,25 @@ const AdminCreateInstallation = () => {
       setError(null);
     } catch (err: any) {
       setError(err.message || 'Error al asignar la actividad.');
+    }
+  };
+
+  const handleGenerateBlocks = async () => {
+    if (!installationId || !blockForm.fechaInicio || !blockForm.fechaFin) {
+      setError('Debes completar todos los campos del rango de fechas.');
+      return;
+    }
+
+    try {
+      await generarBloquesPorRango({
+        instalacionId: installationId,
+        fechaInicio: blockForm.fechaInicio,
+        fechaFin: blockForm.fechaFin,
+      });
+      setMessage('Bloques generados exitosamente.');
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || 'Error al generar los bloques.');
     }
   };
 
@@ -220,7 +245,57 @@ const AdminCreateInstallation = () => {
         </button>
       </form>
 
-      {/* Asignar Actividad */}
+      {/* Formulario para generar bloques */}
+      <div className="bg-white shadow-md rounded p-5 w-1/2 mt-10">
+        <h2 className="text-xl font-bold mb-4">Generar Bloques de Tiempo</h2>
+        <div className="mb-4">
+          <label className="block text-gray-700">Fecha de Inicio</label>
+          <input
+            type="date"
+            className="w-full p-2 border border-gray-300 rounded"
+            value={blockForm.fechaInicio}
+            onChange={(e) => setBlockForm({ ...blockForm, fechaInicio: e.target.value })}
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Fecha de Fin</label>
+          <input
+            type="date"
+            className="w-full p-2 border border-gray-300 rounded"
+            value={blockForm.fechaFin}
+            onChange={(e) => setBlockForm({ ...blockForm, fechaFin: e.target.value })}
+          />
+        </div>
+        <button
+          className="bg-purple-500 text-white px-4 py-2 rounded"
+          onClick={handleGenerateBlocks}
+          disabled={!installationId}
+        >
+          Generar Bloques
+        </button>
+      </div>
+
+      {/* Crear actividad */}
+      <div className="bg-white shadow-md rounded p-5 w-1/2 mt-10">
+        <h2 className="text-xl font-bold mb-4">Crear Nueva Actividad</h2>
+        <div className="mb-4">
+          <label className="block text-gray-700">Nombre de la Actividad</label>
+          <input
+            type="text"
+            className="w-full p-2 border border-gray-300 rounded"
+            value={newActivityName}
+            onChange={(e) => setNewActivityName(e.target.value)}
+          />
+        </div>
+        <button
+          className="bg-purple-500 text-white px-4 py-2 rounded"
+          onClick={handleCreateActivity}
+        >
+          Crear Actividad
+        </button>
+      </div>
+
+      {/* Asignar actividad */}
       <div className="bg-white shadow-md rounded p-5 w-1/2 mt-10">
         <h2 className="text-xl font-bold mb-4">Asignar Actividad a Instalación</h2>
         <div className="mb-4">
@@ -246,7 +321,6 @@ const AdminCreateInstallation = () => {
           Asignar Actividad
         </button>
       </div>
-      
 
       {message && <p className="text-green-500 mt-4">{message}</p>}
       {error && <p className="text-red-500 mt-4">{error}</p>}
