@@ -7,8 +7,7 @@ interface InstallationCardProps {
   nombre: string;
   descripcion: string;
   ubicacion: string;
-  disponible_desde: string;
-  disponible_hasta: string;
+  tipo_instalacion: string;
   imagen: string;
 }
 
@@ -19,6 +18,7 @@ const InstallationCard: React.FC<InstallationCardProps> = ({
   ubicacion, 
   disponible_desde, 
   disponible_hasta, 
+  tipo_instalacion,
   imagen 
 }) => {
   const navigate = useNavigate();  // Hook para redirigir
@@ -45,8 +45,8 @@ const InstallationCard: React.FC<InstallationCardProps> = ({
         <p className="text-[#8A8A8A] font-normal text-[7]">{ubicacion}</p>
 
         {/* Disponibilidad */}
-        <div className="text-black text-sm font-semibold mt-1">
-          {disponible_desde} - {disponible_hasta}
+        <div className="text-black text-sm font-semibold mt-0">
+          {tipo_instalacion}
         </div>
       </div>
     </div>

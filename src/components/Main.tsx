@@ -8,6 +8,7 @@ interface Instalacion {
   ubicacion: string;
   disponible_desde: string;
   disponible_hasta: string;
+  tipo_instalacion: string;
   imagen: string;
 }
 
@@ -31,6 +32,7 @@ const Main: React.FC<MainProps> = ({ instalaciones }) => {
           ubicacion={instalacion.ubicacion}
           disponible_desde={new Date(instalacion.disponible_desde).toLocaleString()}
           disponible_hasta={new Date(instalacion.disponible_hasta).toLocaleString()}
+          tipo_instalacion={instalacion.tipo_instalacion}
           imagen={instalacion.imagen}
         />
       ))}

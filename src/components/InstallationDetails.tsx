@@ -28,6 +28,7 @@ const InstallationDetails = () => {
     hora_inicio: string;
     hora_fin: string;
     disponible: boolean;
+    tipo_instalacion: string;
   }
 
   // Fetch para detalles y actividades
