@@ -10,6 +10,8 @@ const InstallationDetails = () => {
     nombre: string;
     ubicacion: string;
     descripcion: string;
+    tipo_instalacion: string;
+    valor: number;
   }
 
   const [installation, setInstallation] = useState<Installation | null>(null);
@@ -79,14 +81,15 @@ const InstallationDetails = () => {
     }
 
     try {
-      await crearReserva({
-        usuario_id: userId,
-        instalacion_bloque_semanal_id: parseInt(selectedBlock!), // Usamos el campo correcto
-        fecha_reserva: selectedDate,
-        estado_id: 2, // Estado predeterminado
-      });
+      const response = await crearReserva(userId, parseInt(selectedBlock));
 
-      setMessage('Reserva realizada con éxito.');
+      if (response.isPremium) {
+        // Redirigir al portal de pagos para reservas premium
+        window.location.href = `${response.paymentUrl}?token_ws=${response.token}`;
+      } else {
+        // Mostrar mensaje de éxito para reservas gratuitas
+        setMessage(response.message);
+      }
     } catch (error) {
       if (error instanceof Error) {
         setMessage(`Error al realizar la reserva: ${error.message}`);

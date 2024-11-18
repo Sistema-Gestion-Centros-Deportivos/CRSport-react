@@ -19,7 +19,7 @@ export const fetchFilteredInstalaciones = async (actividadId: number) => {
 };
 
 export const fetchAvailableBlocks = async (instalacionId: number, fecha: string) => {
-  const response = await fetch(`http://127.0.0.1:3000/bloques/disponibilidad/${instalacionId}/${fecha}`, {
+  const response = await fetch(`http://127.0.0.1:3000/bloques/instalacion/${instalacionId}/disponibilidad/${fecha}`, {
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('token')}`, // Usamos el token almacenado
     },
@@ -53,35 +53,35 @@ export const fetchInstallationDetails = async (id: string | undefined) => {
   return data;
 };
 
-export const crearReserva = async ({
-  usuario_id,
-  instalacion_bloque_semanal_id,
-  fecha_reserva,
-  estado_id,
-}: {
-  usuario_id: number;
-  instalacion_bloque_semanal_id: number;
-  fecha_reserva: string;
-  estado_id: number;
-}) => {
-  const response = await fetch('http://127.0.0.1:3000/reservas', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      usuario_id,
-      instalacion_bloque_semanal_id,
-      fecha_reserva,
-      estado_id,
-    }),
-  });
+export const crearReserva = async (usuario_id: number, instalacion_bloque_periodico_id: number) => {
+  try {
+    const response = await fetch('http://127.0.0.1:3000/reservas', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ usuario_id, instalacion_bloque_periodico_id }),
+    });
 
-  if (!response.ok) {
-    throw new Error('Error al crear la reserva');
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error al crear la reserva');
+    }
+
+    const data = await response.json();
+
+    if (data.url && data.token) {
+      // Si es premium, devolvemos la URL y token
+      return { isPremium: true, paymentUrl: data.url, token: data.token };
+    }
+
+    // Si es gratuita, devolvemos el mensaje de éxito
+    return { isPremium: false, reservaId: data.reservaId, message: data.message };
+  } catch (error) {
+    console.error('Error al crear la reserva:', error);
+    throw error;
   }
-
-  return await response.json();
 };
+
 
