@@ -1,5 +1,11 @@
-import React, { useState } from 'react';
-import { subirImagen, crearInstalacion } from '../services/adminApiService';
+import React, { useState, useEffect } from 'react';
+import { 
+  subirImagen, 
+  crearInstalacion, 
+  obtenerActividades, 
+  crearActividad, 
+  asignarActividadAInstalacion 
+} from '../services/adminApiService';
 
 const AdminCreateInstallation = () => {
   const [formData, setFormData] = useState({
@@ -18,20 +24,24 @@ const AdminCreateInstallation = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const [actividades, setActividades] = useState([]);
+  const [newActivityName, setNewActivityName] = useState('');
+  const [selectedActivity, setSelectedActivity] = useState<number | null>(null);
+  const [installationId, setInstallationId] = useState<number | null>(null);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedImage(e.target.files[0]);
-      setMessage(null); // Limpia mensajes anteriores
-      setError(null); // Limpia errores anteriores
-    }
-  };
+  // Cargar actividades al montar el componente
+  useEffect(() => {
+    const fetchActividades = async () => {
+      try {
+        const activities = await obtenerActividades();
+        setActividades(activities);
+      } catch (err) {
+        setError('Error al cargar actividades.');
+      }
+    };
+
+    fetchActividades();
+  }, []);
 
   const handleImageUpload = async () => {
     if (!selectedImage) {
@@ -41,33 +51,27 @@ const AdminCreateInstallation = () => {
 
     setLoading(true);
     try {
-      const response = await subirImagen(selectedImage); // Llamada a la API
+      const response = await subirImagen(selectedImage);
       setFormData({ ...formData, imagen_url: response.imageUrl });
       setMessage('Imagen subida exitosamente.');
       setError(null);
-    } catch (error: any) {
-      setError(error.message || 'Error al subir la imagen.');
+    } catch (err: any) {
+      setError(err.message || 'Error al subir la imagen.');
       setMessage(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleCreateInstallation = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Verifica si la imagen se ha subido antes de crear la instalación
-    if (!formData.imagen_url) {
-      setError('Debes subir una imagen antes de crear la instalación.');
-      return;
-    }
-
     setLoading(true);
 
     try {
-      await crearInstalacion(formData); // Llamada a la API
+      const response = await crearInstalacion(formData);
       setMessage('Instalación creada exitosamente.');
       setError(null);
+      setInstallationId(response.id); // Guardamos el ID de la instalación creada
       setFormData({
         nombre: '',
         descripcion: '',
@@ -79,135 +83,192 @@ const AdminCreateInstallation = () => {
         imagen_url: '',
       });
       setSelectedImage(null);
-    } catch (error: any) {
-      setError(error.message || 'Error al crear la instalación.');
+    } catch (err: any) {
+      setError(err.message || 'Error al crear la instalación.');
       setMessage(null);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleCreateActivity = async () => {
+    if (!newActivityName.trim()) {
+      setError('El nombre de la actividad no puede estar vacío.');
+      return;
+    }
+
+    try {
+      const response = await crearActividad(newActivityName);
+      setActividades((prev) => [...prev, response]); // Agregar la nueva actividad a la lista
+      setMessage('Actividad creada exitosamente.');
+      setNewActivityName('');
+    } catch (err: any) {
+      setError(err.message || 'Error al crear la actividad.');
+    }
+  };
+
+  const handleAssignActivity = async () => {
+    if (!installationId || !selectedActivity) {
+      setError('Debes seleccionar una instalación y una actividad.');
+      return;
+    }
+
+    try {
+      await asignarActividadAInstalacion(installationId, selectedActivity);
+      setMessage('Actividad asignada a la instalación correctamente.');
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || 'Error al asignar la actividad.');
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="w-full max-w-lg bg-white shadow-md rounded-lg p-6">
-        <h2 className="text-2xl font-bold mb-4">Crear Nueva Instalación</h2>
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center py-10">
+      <h1 className="text-3xl font-bold mb-5">Administrar Instalaciones</h1>
 
-        {message && <p className="text-green-500 mb-4">{message}</p>}
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-gray-700">Nombre</label>
-            <input
-              type="text"
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleInputChange}
-              className="w-full border border-gray-300 p-2 rounded-lg"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700">Descripción</label>
-            <textarea
-              name="descripcion"
-              value={formData.descripcion}
-              onChange={handleInputChange}
-              className="w-full border border-gray-300 p-2 rounded-lg"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700">Ubicación</label>
-            <input
-              type="text"
-              name="ubicacion"
-              value={formData.ubicacion}
-              onChange={handleInputChange}
-              className="w-full border border-gray-300 p-2 rounded-lg"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700">Disponible Desde</label>
-            <input
-              type="datetime-local"
-              name="disponible_desde"
-              value={formData.disponible_desde}
-              onChange={handleInputChange}
-              className="w-full border border-gray-300 p-2 rounded-lg"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700">Disponible Hasta</label>
-            <input
-              type="datetime-local"
-              name="disponible_hasta"
-              value={formData.disponible_hasta}
-              onChange={handleInputChange}
-              className="w-full border border-gray-300 p-2 rounded-lg"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700">Tipo de Instalación</label>
-            <select
-              name="tipo_instalacion"
-              value={formData.tipo_instalacion}
-              onChange={handleInputChange}
-              className="w-full border border-gray-300 p-2 rounded-lg"
-            >
-              <option value="gratuita">Gratuita</option>
-              <option value="premium">Premium</option>
-            </select>
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700">Valor</label>
-            <input
-              type="number"
-              name="valor"
-              value={formData.valor}
-              onChange={handleInputChange}
-              className="w-full border border-gray-300 p-2 rounded-lg"
-              required
-              min="0"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700">Imagen</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="w-full border border-gray-300 p-2 rounded-lg"
-            />
-            <button
-              type="button"
-              onClick={handleImageUpload}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg mt-2 hover:bg-blue-600"
-              disabled={loading}
-            >
-              {loading ? 'Subiendo Imagen...' : 'Subir Imagen'}
-            </button>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-green-500 text-white p-3 rounded-lg mt-4 hover:bg-green-600"
-            disabled={loading}
+      {/* Formulario para crear una instalación */}
+      <form onSubmit={handleCreateInstallation} className="bg-white shadow-md rounded p-5 w-1/2">
+        <h2 className="text-xl font-bold mb-4">Crear Nueva Instalación</h2>
+        <div className="mb-4">
+          <label className="block text-gray-700">Nombre</label>
+          <input
+            type="text"
+            className="w-full p-2 border border-gray-300 rounded"
+            value={formData.nombre}
+            onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Descripción</label>
+          <textarea
+            className="w-full p-2 border border-gray-300 rounded"
+            value={formData.descripcion}
+            onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+          ></textarea>
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Ubicación</label>
+          <input
+            type="text"
+            className="w-full p-2 border border-gray-300 rounded"
+            value={formData.ubicacion}
+            onChange={(e) => setFormData({ ...formData, ubicacion: e.target.value })}
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Disponible Desde</label>
+          <input
+            type="datetime-local"
+            className="w-full p-2 border border-gray-300 rounded"
+            value={formData.disponible_desde}
+            onChange={(e) => setFormData({ ...formData, disponible_desde: e.target.value })}
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Disponible Hasta</label>
+          <input
+            type="datetime-local"
+            className="w-full p-2 border border-gray-300 rounded"
+            value={formData.disponible_hasta}
+            onChange={(e) => setFormData({ ...formData, disponible_hasta: e.target.value })}
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Tipo de Instalación</label>
+          <select
+            className="w-full p-2 border border-gray-300 rounded"
+            value={formData.tipo_instalacion}
+            onChange={(e) => setFormData({ ...formData, tipo_instalacion: e.target.value })}
           >
-            {loading ? 'Creando Instalación...' : 'Crear Instalación'}
+            <option value="gratuita">Gratuita</option>
+            <option value="premium">Premium</option>
+          </select>
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Valor</label>
+          <input
+            type="number"
+            className="w-full p-2 border border-gray-300 rounded"
+            value={formData.valor}
+            onChange={(e) => setFormData({ ...formData, valor: Number(e.target.value) })}
+          />
+        </div>
+
+        {/* Subir imagen */}
+        <div className="mb-4">
+          <label className="block text-gray-700">Imagen</label>
+          <input
+            type="file"
+            className="w-full"
+            onChange={(e) => setSelectedImage(e.target.files?.[0] || null)}
+          />
+          <button
+            type="button"
+            className="bg-blue-500 text-white px-4 py-2 rounded mt-2"
+            onClick={handleImageUpload}
+          >
+            Subir Imagen
           </button>
-        </form>
+        </div>
+
+        <button
+          type="submit"
+          className="bg-green-500 text-white px-4 py-2 rounded"
+          disabled={loading}
+        >
+          Crear Instalación
+        </button>
+      </form>
+
+      {/* Crear Actividad */}
+      <div className="bg-white shadow-md rounded p-5 w-1/2 mt-10">
+        <h2 className="text-xl font-bold mb-4">Crear Nueva Actividad</h2>
+        <div className="mb-4">
+          <label className="block text-gray-700">Nombre de la Actividad</label>
+          <input
+            type="text"
+            className="w-full p-2 border border-gray-300 rounded"
+            value={newActivityName}
+            onChange={(e) => setNewActivityName(e.target.value)}
+          />
+        </div>
+        <button
+          className="bg-purple-500 text-white px-4 py-2 rounded"
+          onClick={handleCreateActivity}
+        >
+          Crear Actividad
+        </button>
       </div>
+
+      {/* Asignar Actividad */}
+      <div className="bg-white shadow-md rounded p-5 w-1/2 mt-10">
+        <h2 className="text-xl font-bold mb-4">Asignar Actividad a Instalación</h2>
+        <div className="mb-4">
+          <label className="block text-gray-700">Selecciona una Actividad</label>
+          <select
+            className="w-full p-2 border border-gray-300 rounded"
+            value={selectedActivity || ''}
+            onChange={(e) => setSelectedActivity(Number(e.target.value))}
+          >
+            <option value="">Seleccionar...</option>
+            {actividades.map((actividad: any) => (
+              <option key={actividad.id} value={actividad.id}>
+                {actividad.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button
+          className="bg-yellow-500 text-white px-4 py-2 rounded"
+          onClick={handleAssignActivity}
+          disabled={!installationId || !selectedActivity}
+        >
+          Asignar Actividad
+        </button>
+      </div>
+
+      {message && <p className="text-green-500 mt-4">{message}</p>}
+      {error && <p className="text-red-500 mt-4">{error}</p>}
     </div>
   );
 };

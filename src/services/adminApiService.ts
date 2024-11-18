@@ -1,42 +1,80 @@
-// services/adminApiService.ts
+const API_BASE_URL = 'http://127.0.0.1:3000'; // Asegúrate de que esta sea tu URL base
 
+// Obtener todas las actividades
+export const obtenerActividades = async () => {
+  const response = await fetch(`${API_BASE_URL}/actividades`, {
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+    },
+  });
+  if (!response.ok) {
+    throw new Error('Error al obtener actividades');
+  }
+  return await response.json();
+};
+
+// Crear una nueva actividad
+export const crearActividad = async (nombre: string) => {
+  const response = await fetch(`${API_BASE_URL}/actividades`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ nombre }),
+  });
+  if (!response.ok) {
+    throw new Error('Error al crear actividad');
+  }
+  return await response.json();
+};
+
+// Asignar una actividad a una instalación
+export const asignarActividadAInstalacion = async (instalacion_id: number, actividad_id: number) => {
+  const response = await fetch(`${API_BASE_URL}/actividades/asignar`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ instalacion_id, actividad_id }),
+  });
+  if (!response.ok) {
+    throw new Error('Error al asignar actividad a la instalación');
+  }
+  return await response.json();
+};
+
+// Subir imagen
 export const subirImagen = async (imagen: File) => {
-    const formData = new FormData();
-    formData.append('imagen', imagen);
-  
-    const response = await fetch('http://127.0.0.1:3000/instalaciones/subir-imagen', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`, // Token para autenticación
-      },
-      body: formData,
-    });
-  
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Error al subir la imagen');
-    }
-  
-    const data = await response.json();
-    return data; // Retorna { message: 'Imagen subida exitosamente', imageUrl: '...' }
-  };
-  
-  export const crearInstalacion = async (instalacionData: any) => {
-    const response = await fetch('http://127.0.0.1:3000/instalaciones', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`, // Token para autenticación
-      },
-      body: JSON.stringify(instalacionData),
-    });
-  
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Error al crear la instalación');
-    }
-  
-    const data = await response.json();
-    return data; // Retorna la instalación creada
-  };
-  
+  const formData = new FormData();
+  formData.append('imagen', imagen);
+
+  const response = await fetch(`${API_BASE_URL}/instalaciones/subir-imagen`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+    },
+    body: formData,
+  });
+  if (!response.ok) {
+    throw new Error('Error al subir la imagen');
+  }
+  return await response.json();
+};
+
+// Crear una nueva instalación
+export const crearInstalacion = async (formData: Record<string, any>) => {
+  const response = await fetch(`${API_BASE_URL}/instalaciones`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(formData),
+  });
+  if (!response.ok) {
+    throw new Error('Error al crear la instalación');
+  }
+  return await response.json();
+};
