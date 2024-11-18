@@ -78,3 +78,36 @@ export const crearInstalacion = async (formData: Record<string, any>) => {
   }
   return await response.json();
 };
+
+// Generar bloques de tiempo por rango
+export const generarBloquesPorRango = async (instalacionId: number, fechaInicio: string, fechaFin: string) => {
+  const response = await fetch(`${API_BASE_URL}/bloques/generar-rango`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ instalacionId, fechaInicio, fechaFin }),
+  });
+  if (!response.ok) {
+    throw new Error('Error al generar bloques por rango');
+  }
+  return await response.json();
+};
+
+// Eliminar instalación
+export const eliminarInstalacion = async (instalacionId: number) => {
+  const response = await fetch(`${API_BASE_URL}/instalaciones/${instalacionId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+    },
+  });
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error('Instalación no encontrada');
+    }
+    throw new Error('Error al eliminar la instalación');
+  }
+  return await response.json();
+};

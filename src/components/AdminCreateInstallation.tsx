@@ -220,26 +220,6 @@ const AdminCreateInstallation = () => {
         </button>
       </form>
 
-      {/* Crear Actividad */}
-      <div className="bg-white shadow-md rounded p-5 w-1/2 mt-10">
-        <h2 className="text-xl font-bold mb-4">Crear Nueva Actividad</h2>
-        <div className="mb-4">
-          <label className="block text-gray-700">Nombre de la Actividad</label>
-          <input
-            type="text"
-            className="w-full p-2 border border-gray-300 rounded"
-            value={newActivityName}
-            onChange={(e) => setNewActivityName(e.target.value)}
-          />
-        </div>
-        <button
-          className="bg-purple-500 text-white px-4 py-2 rounded"
-          onClick={handleCreateActivity}
-        >
-          Crear Actividad
-        </button>
-      </div>
-
       {/* Asignar Actividad */}
       <div className="bg-white shadow-md rounded p-5 w-1/2 mt-10">
         <h2 className="text-xl font-bold mb-4">Asignar Actividad a Instalación</h2>
@@ -266,6 +246,7 @@ const AdminCreateInstallation = () => {
           Asignar Actividad
         </button>
       </div>
+      
 
       {message && <p className="text-green-500 mt-4">{message}</p>}
       {error && <p className="text-red-500 mt-4">{error}</p>}
