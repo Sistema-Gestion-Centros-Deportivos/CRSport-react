@@ -5,6 +5,7 @@ import Main from './components/Main';
 import InstallationDetails from './components/InstallationDetails';
 import Layout from './components/Layout';
 import { fetchFilteredInstalaciones, fetchAllInstalaciones } from './services/apiService';
+import PaymentDetails from './components/PaymentDetails';
 
 const App = () => {
   const [filteredInstalaciones, setFilteredInstalaciones] = useState([]);
@@ -105,6 +106,7 @@ const App = () => {
           <Route index element={<Main instalaciones={filteredInstalaciones} />} />
           <Route path="instalacion/:id" element={<InstallationDetails />} />
         </Route>
+        <Route path="/pagos/detalles/:token_ws" element={<PaymentDetails />} />
       </Routes>
     </Router>
   );

@@ -84,4 +84,11 @@ export const crearReserva = async (usuario_id: number, instalacion_bloque_period
   }
 };
 
+export const fetchPaymentDetails = async (token_ws: string) => {
+  const response = await fetch(`http://127.0.0.1:3000/pagos/detalles/${token_ws}`);
+  if (!response.ok) {
+    throw new Error('Error al obtener los detalles del pago');
+  }
+  return await response.json();
+};
 
